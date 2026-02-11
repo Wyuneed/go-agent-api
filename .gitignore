@@ -37,3 +37,8 @@ vendor/
 tmp/
 *.tmp
 *.log
+
+# Claude Assistant
+.claude/
+CLAUDE.md
+
