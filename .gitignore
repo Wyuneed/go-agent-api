@@ -1,4 +1,39 @@
-# Ignore files related to claude assistant
-CLAUDE.MD
-.claude
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
+# Build output
+server
+
+# Test
+coverage.out
+coverage.html
+*.test
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+
+# Temporary
+tmp/
+*.tmp
+*.log
