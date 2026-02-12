@@ -20,7 +20,7 @@ CREATE INDEX idx_tokens_user_id ON user_tokens(user_id);
 CREATE INDEX idx_tokens_token_hash ON user_tokens(token_hash);
 CREATE INDEX idx_tokens_expires_at ON user_tokens(expires_at);
 CREATE INDEX idx_tokens_valid ON user_tokens(token_hash)
-    WHERE is_revoked = false AND expires_at > NOW();
+    WHERE is_revoked = false;
 
 CREATE TRIGGER update_tokens_updated_at BEFORE UPDATE ON user_tokens
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
