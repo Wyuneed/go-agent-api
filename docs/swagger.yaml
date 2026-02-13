@@ -1,0 +1,819 @@
+basePath: /
+definitions:
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.ApprovalRequest:
+    properties:
+      approved:
+        type: boolean
+      reason:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.ChatCompletionRequest:
+    properties:
+      max_tokens:
+        type: integer
+      messages:
+        items:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_port.ChatMessage'
+        type: array
+      model:
+        type: string
+      stream:
+        type: boolean
+      temperature:
+        type: number
+      tool_choice: {}
+      tools:
+        items: {}
+        type: array
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.CreateConversationRequest:
+    properties:
+      agent_type:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_dto_request.SendMessageRequest:
+    properties:
+      message:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_application_port.ChatMessage:
+    properties:
+      content:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+      tool_call_id:
+        type: string
+      tool_calls:
+        items:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_pkg_toolspec.ToolCall'
+        type: array
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerApprovalData:
+    properties:
+      message:
+        example: Action approved, resuming workflow
+        type: string
+      status:
+        example: approved
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerApprovalResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerApprovalData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerBatchResultData:
+    properties:
+      results:
+        items: {}
+        type: array
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerBatchResultResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerBatchResultData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionChoice:
+    properties:
+      finish_reason:
+        example: stop
+        type: string
+      index:
+        example: 0
+        type: integer
+      message:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerMessageData'
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionData:
+    properties:
+      choices:
+        items:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionChoice'
+        type: array
+      id:
+        example: chatcmpl-abc123
+        type: string
+      model:
+        example: gpt-4o-mini
+        type: string
+      object:
+        example: chat.completion
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationData:
+    properties:
+      agent_type:
+        example: general
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      message_count:
+        example: 5
+        type: integer
+      model:
+        example: gpt-4o-mini
+        type: string
+      status:
+        example: active
+        type: string
+      title:
+        example: My first conversation
+        type: string
+      total_tokens:
+        example: 1024
+        type: integer
+      updated_at:
+        example: "2024-01-01T00:01:00Z"
+        type: string
+      user_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationData'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErr:
+    properties:
+      code:
+        example: INVALID_REQUEST
+        type: string
+      message:
+        example: Invalid request body
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErr'
+      success:
+        example: false
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerHealthData:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerHealthResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerHealthData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerLoginData:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expires_in:
+        example: 900
+        type: integer
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+      user:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerUserData'
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerLoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerLoginData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerMessageData:
+    properties:
+      content:
+        example: Hello! How can I help you today?
+        type: string
+      conversation_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      model:
+        example: gpt-4o-mini
+        type: string
+      role:
+        example: assistant
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerRegisterData:
+    properties:
+      user:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerUserData'
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerRegisterResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerRegisterData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerSendMessageData:
+    properties:
+      conversation:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationData'
+      message:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerMessageData'
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerSendMessageResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerSendMessageData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolData:
+    properties:
+      function:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolFunction'
+      type:
+        example: function
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolFunction:
+    properties:
+      description:
+        example: Perform mathematical calculations
+        type: string
+      name:
+        example: calculator
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolResultResponse:
+    properties:
+      data: {}
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolsData:
+    properties:
+      tools:
+        items:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolData'
+        type: array
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolsData'
+      success:
+        example: true
+        type: boolean
+    type: object
+  github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerUserData:
+    properties:
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      email:
+        example: user@example.com
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      name:
+        example: John Doe
+        type: string
+      role:
+        example: user
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_pkg_toolspec.FunctionCall:
+    properties:
+      arguments:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_wyuneed_go-agent-api_pkg_toolspec.ToolCall:
+    properties:
+      function:
+        $ref: '#/definitions/github_com_wyuneed_go-agent-api_pkg_toolspec.FunctionCall'
+      id:
+        type: string
+      type:
+        type: string
+    type: object
+host: 127.0.0.1:8080
+info:
+  contact:
+    name: API Support
+    url: https://github.com/wyuneed/go-agent-api/issues
+  description: Production-ready AI Agent API with DDD architecture and Eino workflow
+    engine. Supports OpenAI-compatible tool calling, human-in-the-loop approval, JWT
+    authentication, and streaming responses.
+  license:
+    name: MIT
+    url: https://github.com/wyuneed/go-agent-api/blob/main/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: Go Agent API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Returns 200 OK when the server process is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerHealthResponse'
+      summary: Liveness check
+      tags:
+      - health
+  /ready:
+    get:
+      description: Returns 200 OK when the server is ready (DB + Redis connected)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerHealthResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      summary: Readiness check
+      tags:
+      - health
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT access + refresh tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      summary: Login
+      tags:
+      - auth
+  /v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Uses a valid refresh token to issue a new access token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account with email and password
+      parameters:
+      - description: Registration details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerRegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+  /v1/chat/completions:
+    post:
+      consumes:
+      - application/json
+      description: Sends messages to the AI agent and returns a completion. Set stream=true
+        to receive Server-Sent Events.
+      parameters:
+      - description: Chat completion request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.ChatCompletionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerChatCompletionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Chat completions (OpenAI-compatible)
+      tags:
+      - chat
+  /v1/conversations:
+    get:
+      description: Returns all conversations belonging to the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List conversations
+      tags:
+      - conversations
+    post:
+      consumes:
+      - application/json
+      description: Creates a new conversation and sends the first message to the agent
+      parameters:
+      - description: Conversation details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.CreateConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerSendMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a conversation
+      tags:
+      - conversations
+  /v1/conversations/{id}:
+    get:
+      description: Returns a conversation with its full message history
+      parameters:
+      - description: Conversation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerConversationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a conversation
+      tags:
+      - conversations
+  /v1/conversations/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Resumes a conversation that is paused waiting for human-in-the-loop
+        approval
+      parameters:
+      - description: Conversation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Approval decision
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.ApprovalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerApprovalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Approve or reject a pending action
+      tags:
+      - conversations
+  /v1/conversations/{id}/messages:
+    post:
+      consumes:
+      - application/json
+      description: Sends a message to an existing conversation and returns the agent's
+        reply
+      parameters:
+      - description: Conversation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Message content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_application_dto_request.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerSendMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send a message
+      tags:
+      - conversations
+  /v1/tools:
+    get:
+      description: Returns the list of tools the authenticated token is allowed to
+        use
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List available tools
+      tags:
+      - tools
+  /v1/tools/batch:
+    post:
+      consumes:
+      - application/json
+      description: Executes multiple tool calls concurrently and returns all results
+      parameters:
+      - description: Array of tool calls
+        in: body
+        name: body
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_pkg_toolspec.ToolCall'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerBatchResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Execute tools in parallel
+      tags:
+      - tools
+  /v1/tools/execute:
+    post:
+      consumes:
+      - application/json
+      description: Executes a single tool call and returns the result
+      parameters:
+      - description: Tool call
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_wyuneed_go-agent-api_pkg_toolspec.ToolCall'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerToolResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_wyuneed_go-agent-api_internal_pkg_response.SwaggerErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Execute a tool
+      tags:
+      - tools
+securityDefinitions:
+  BearerAuth:
+    description: 'Enter "Bearer" followed by a space and your JWT token. Example:
+      "Bearer eyJhbGci..."'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

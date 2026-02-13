@@ -24,6 +24,16 @@ func NewAuthHandler(login *auth.LoginUseCase, refresh *auth.RefreshTokenUseCase,
 	}
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  Creates a new user account with email and password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.RegisterRequest          true  "Registration details"
+// @Success      201   {object}  response.SwaggerRegisterResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Router       /v1/auth/register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req request.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -44,6 +54,17 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusCreated, result)
 }
 
+// Login godoc
+// @Summary      Login
+// @Description  Authenticates a user and returns JWT access + refresh tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.LoginRequest          true  "Login credentials"
+// @Success      200   {object}  response.SwaggerLoginResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Router       /v1/auth/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req request.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -63,6 +84,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, result)
 }
 
+// RefreshToken godoc
+// @Summary      Refresh access token
+// @Description  Uses a valid refresh token to issue a new access token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      request.RefreshTokenRequest   true  "Refresh token"
+// @Success      200   {object}  response.SwaggerLoginResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Router       /v1/auth/refresh [post]
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	var req request.RefreshTokenRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

@@ -1,4 +1,4 @@
-.PHONY: all build run test lint migrate docker help
+.PHONY: all build run test lint migrate docker swagger help
 
 # Variables
 BINARY_NAME=server
@@ -88,11 +88,17 @@ docker-ps:
 	docker-compose -f deployments/docker-compose.yml ps
 
 ## Development
+swagger:
+	@echo "Generating Swagger docs..."
+	swag init -g cmd/api/main.go -o docs/ --parseDependency --parseInternal
+	@echo "Swagger UI: http://localhost:8080/swagger/index.html"
+
 dev-deps:
 	@echo "Installing development dependencies..."
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/air-verse/air@latest
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
 
 generate:
 	@echo "Running go generate..."
@@ -121,5 +127,6 @@ help:
 	@echo "  docker-up        - Start Docker Compose"
 	@echo "  docker-down      - Stop Docker Compose"
 	@echo "  docker-logs      - View Docker logs"
+	@echo "  swagger          - Regenerate Swagger docs (docs/)"
 	@echo "  dev-deps         - Install development dependencies"
 	@echo "  clean            - Clean build artifacts"

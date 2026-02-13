@@ -1,3 +1,23 @@
+// Package main is the entry point for the Go Agent API server.
+//
+// @title           Go Agent API
+// @version         1.0
+// @description     Production-ready AI Agent API with DDD architecture and Eino workflow engine. Supports OpenAI-compatible tool calling, human-in-the-loop approval, JWT authentication, and streaming responses.
+// @termsOfService  http://swagger.io/terms/
+//
+// @contact.name   API Support
+// @contact.url    https://github.com/wyuneed/go-agent-api/issues
+//
+// @license.name  MIT
+// @license.url   https://github.com/wyuneed/go-agent-api/blob/main/LICENSE
+//
+// @host      127.0.0.1:8080
+// @BasePath  /
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter "Bearer" followed by a space and your JWT token. Example: "Bearer eyJhbGci..."
 package main
 
 import (
@@ -11,7 +31,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 
+	_ "github.com/wyuneed/go-agent-api/docs"
 	"github.com/wyuneed/go-agent-api/internal/application/usecase/auth"
 	"github.com/wyuneed/go-agent-api/internal/application/usecase/chat"
 	"github.com/wyuneed/go-agent-api/internal/application/usecase/tool"
@@ -105,6 +127,9 @@ func main() {
 	r.Use(middleware.Logger(logger))
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.CORS)
+
+	// Swagger UI
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	// Health routes
 	r.Get("/health", healthHandler.Health)
