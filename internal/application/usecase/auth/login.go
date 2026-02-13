@@ -52,8 +52,9 @@ func (uc *LoginUseCase) Execute(ctx context.Context, input LoginInput) (*LoginOu
 		return nil, fmt.Errorf("user account is inactive")
 	}
 
-	// Create token record
-	tokenEntity := entity.NewAPIKey(user.ID, "", "session", time.Now().Add(7*24*time.Hour))
+	// Create token record; use a random nonce as the hash (JWT sessions are looked
+	// up by token ID from JWT claims, not by hash, so it just needs to be unique).
+	tokenEntity := entity.NewAPIKey(user.ID, jwt.HashToken(jwt.GenerateAPIKey()), "session", time.Now().Add(7*24*time.Hour))
 	tokenEntity.TokenType = entity.TokenTypeAccess
 
 	if err := uc.tokenRepo.Create(ctx, tokenEntity); err != nil {

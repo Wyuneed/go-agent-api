@@ -19,9 +19,10 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
-      - LLM_PROVIDER=litellm
-      - LLM_BASE_URL=http://litellm:4000
+      - LLM_PROVIDER=${LLM_PROVIDER:-litellm}
+      - LLM_BASE_URL=${LLM_BASE_URL:-http://litellm:4000}
       - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_DEFAULT_MODEL=${LLM_DEFAULT_MODEL:-gpt-4o-mini}
     depends_on:
       postgres:
         condition: service_healthy
