@@ -34,7 +34,19 @@ func NewChatHandler(
 	}
 }
 
-// POST /v1/chat/completions - OpenAI-compatible endpoint
+// ChatCompletions godoc
+// @Summary      Chat completions (OpenAI-compatible)
+// @Description  Sends messages to the AI agent and returns a completion. Set stream=true to receive Server-Sent Events.
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      request.ChatCompletionRequest         true  "Chat completion request"
+// @Success      200   {object}  response.SwaggerChatCompletionResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/chat/completions [post]
 func (h *ChatHandler) ChatCompletions(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 	token := middleware.GetTokenFromContext(r.Context())
@@ -90,7 +102,19 @@ func (h *ChatHandler) handleStreamingChat(w http.ResponseWriter, r *http.Request
 	response.SSEEvent(w, "", "[DONE]")
 }
 
-// POST /v1/conversations
+// CreateConversation godoc
+// @Summary      Create a conversation
+// @Description  Creates a new conversation and sends the first message to the agent
+// @Tags         conversations
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      request.CreateConversationRequest     true  "Conversation details"
+// @Success      201   {object}  response.SwaggerSendMessageResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/conversations [post]
 func (h *ChatHandler) CreateConversation(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 
@@ -113,7 +137,20 @@ func (h *ChatHandler) CreateConversation(w http.ResponseWriter, r *http.Request)
 	response.JSON(w, http.StatusCreated, result)
 }
 
-// POST /v1/conversations/:id/messages
+// SendMessage godoc
+// @Summary      Send a message
+// @Description  Sends a message to an existing conversation and returns the agent's reply
+// @Tags         conversations
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string                                true  "Conversation ID (UUID)"
+// @Param        body  body      request.SendMessageRequest            true  "Message content"
+// @Success      200   {object}  response.SwaggerSendMessageResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/conversations/{id}/messages [post]
 func (h *ChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 
@@ -142,7 +179,18 @@ func (h *ChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, result)
 }
 
-// GET /v1/conversations/:id
+// GetConversation godoc
+// @Summary      Get a conversation
+// @Description  Returns a conversation with its full message history
+// @Tags         conversations
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string                                true  "Conversation ID (UUID)"
+// @Success      200  {object}  response.SwaggerConversationResponse
+// @Failure      400  {object}  response.SwaggerErrorResponse
+// @Failure      401  {object}  response.SwaggerErrorResponse
+// @Failure      404  {object}  response.SwaggerErrorResponse
+// @Router       /v1/conversations/{id} [get]
 func (h *ChatHandler) GetConversation(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 
@@ -161,7 +209,16 @@ func (h *ChatHandler) GetConversation(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, result)
 }
 
-// GET /v1/conversations
+// ListConversations godoc
+// @Summary      List conversations
+// @Description  Returns all conversations belonging to the authenticated user
+// @Tags         conversations
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  response.SwaggerConversationListResponse
+// @Failure      401  {object}  response.SwaggerErrorResponse
+// @Failure      500  {object}  response.SwaggerErrorResponse
+// @Router       /v1/conversations [get]
 func (h *ChatHandler) ListConversations(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 
@@ -174,7 +231,20 @@ func (h *ChatHandler) ListConversations(w http.ResponseWriter, r *http.Request) 
 	response.JSON(w, http.StatusOK, result)
 }
 
-// POST /v1/conversations/:id/approve
+// ApproveAction godoc
+// @Summary      Approve or reject a pending action
+// @Description  Resumes a conversation that is paused waiting for human-in-the-loop approval
+// @Tags         conversations
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id    path      string                                true  "Conversation ID (UUID)"
+// @Param        body  body      request.ApprovalRequest               true  "Approval decision"
+// @Success      200   {object}  response.SwaggerApprovalResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/conversations/{id}/approve [post]
 func (h *ChatHandler) ApproveAction(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 

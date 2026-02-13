@@ -22,7 +22,15 @@ func NewToolHandler(registry *tool.ToolRegistry, executeTool *tool.ExecuteToolUs
 	}
 }
 
-// GET /v1/tools
+// ListTools godoc
+// @Summary      List available tools
+// @Description  Returns the list of tools the authenticated token is allowed to use
+// @Tags         tools
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  response.SwaggerToolsResponse
+// @Failure      401  {object}  response.SwaggerErrorResponse
+// @Router       /v1/tools [get]
 func (h *ToolHandler) ListTools(w http.ResponseWriter, r *http.Request) {
 	token := middleware.GetTokenFromContext(r.Context())
 
@@ -38,7 +46,19 @@ func (h *ToolHandler) ListTools(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// POST /v1/tools/execute
+// ExecuteTool godoc
+// @Summary      Execute a tool
+// @Description  Executes a single tool call and returns the result
+// @Tags         tools
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      toolspec.ToolCall                  true  "Tool call"
+// @Success      200   {object}  response.SwaggerToolResultResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/tools/execute [post]
 func (h *ToolHandler) ExecuteTool(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 	token := middleware.GetTokenFromContext(r.Context())
@@ -62,7 +82,19 @@ func (h *ToolHandler) ExecuteTool(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, result.Result)
 }
 
-// POST /v1/tools/batch
+// ExecuteToolBatch godoc
+// @Summary      Execute tools in parallel
+// @Description  Executes multiple tool calls concurrently and returns all results
+// @Tags         tools
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        body  body      []toolspec.ToolCall                 true  "Array of tool calls"
+// @Success      200   {object}  response.SwaggerBatchResultResponse
+// @Failure      400   {object}  response.SwaggerErrorResponse
+// @Failure      401   {object}  response.SwaggerErrorResponse
+// @Failure      500   {object}  response.SwaggerErrorResponse
+// @Router       /v1/tools/batch [post]
 func (h *ToolHandler) ExecuteToolBatch(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r.Context())
 	token := middleware.GetTokenFromContext(r.Context())
