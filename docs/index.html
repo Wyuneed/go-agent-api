@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Agent API — Production-Ready AI Agent Framework</title>
+  <meta name="description" content="Production-ready Go AI Agent API with DDD architecture, Eino workflow engine, OpenAI-compatible tool calling, JWT auth, and streaming responses." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    html { scroll-behavior: smooth; }
+    pre { overflow-x: auto; }
+    .gradient-hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f172a 100%); }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(99,102,241,0.15); }
+    /* Swagger UI overrides */
+    #swagger-ui .swagger-ui .topbar { display: none; }
+    #swagger-ui .swagger-ui .info { display: none; }
+    #swagger-ui { background: #1e293b; border-radius: 12px; padding: 1rem; }
+    #swagger-ui .swagger-ui { background: transparent; }
+    #swagger-ui .swagger-ui .scheme-container { background: #0f172a; padding: 1rem; border-radius: 8px; }
+    #swagger-ui .swagger-ui .opblock { background: #0f172a; border: 1px solid #334155; }
+    #swagger-ui .swagger-ui .opblock-tag { color: #e2e8f0; border-bottom: 1px solid #334155; }
+    #swagger-ui .swagger-ui .opblock .opblock-summary-description { color: #94a3b8; }
+    #swagger-ui .swagger-ui .info .title { color: #e2e8f0; }
+    #swagger-ui .swagger-ui section.models { background: #0f172a; border: 1px solid #334155; }
+    #swagger-ui .swagger-ui .model-title { color: #e2e8f0; }
+    .tab-btn.active { background: #6366f1; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <svg class="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+        </svg>
+        <span class="font-bold text-lg text-white">Go Agent API</span>
+      </div>
+      <div class="hidden sm:flex items-center gap-6 text-sm text-slate-400">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#quickstart" class="hover:text-white transition">Quick Start</a>
+        <a href="#endpoints" class="hover:text-white transition">API</a>
+        <a href="#explorer" class="hover:text-white transition">Explorer</a>
+        <a href="https://github.com/wyuneed/go-agent-api" target="_blank"
+           class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="gradient-hero pt-32 pb-20 px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="flex flex-wrap justify-center gap-2 mb-6">
+        <img src="https://img.shields.io/badge/Go-1.24-00ADD8?style=flat&logo=go&logoColor=white" alt="Go 1.24" />
+        <img src="https://img.shields.io/badge/version-v1.1.4-6366f1?style=flat" alt="v1.1.4" />
+        <img src="https://img.shields.io/badge/license-MIT-22c55e?style=flat" alt="MIT" />
+        <img src="https://img.shields.io/badge/tests-81%20unit-f59e0b?style=flat" alt="81 unit tests" />
+        <img src="https://img.shields.io/badge/Docker-~18MB-0ea5e9?style=flat&logo=docker&logoColor=white" alt="~18MB Docker" />
+      </div>
+      <h1 class="text-5xl sm:text-6xl font-extrabold text-white mb-4 leading-tight">
+        Go Agent API
+      </h1>
+      <p class="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+        Production-ready AI Agent framework built in Go. DDD architecture · Eino workflow engine · OpenAI-compatible · Human-in-the-loop approval · Streaming SSE
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="https://github.com/wyuneed/go-agent-api" target="_blank"
+           class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12"/>
+          </svg>
+          View on GitHub
+        </a>
+        <a href="#quickstart"
+           class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition">
+          Quick Start →
+        </a>
+        <a href="#explorer"
+           class="border border-slate-600 hover:border-indigo-400 text-slate-300 hover:text-white font-semibold px-6 py-3 rounded-xl transition">
+          API Explorer
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="py-20 px-6 bg-slate-950">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-white text-center mb-3">Built for Production AI Agents</h2>
+      <p class="text-slate-400 text-center mb-12">Everything you need to build, deploy, and operate agentic AI systems.</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Card 1 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-indigo-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Eino Workflow Engine</h3>
+          <p class="text-slate-400 text-sm">DAG-based agentic workflows with Router → Think → Act → Observe loop. Multi-agent routing built-in. LangGraph equivalent for Go.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-green-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">OpenAI-Compatible</h3>
+          <p class="text-slate-400 text-sm">Drop-in replacement for OpenAI's <code class="text-green-300 bg-slate-900 px-1 rounded">/v1/chat/completions</code>. Works with any OpenAI client, LiteLLM, or custom LLM endpoint.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-amber-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Human-in-the-Loop</h3>
+          <p class="text-slate-400 text-sm">Pause workflow execution and request human approval before sensitive tool calls. Resume or reject with a reason via REST API.</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-blue-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">JWT Auth + API Keys</h3>
+          <p class="text-slate-400 text-sm">DB-managed token expiration with per-token rate limits, allowed tools, and allowed models. Scoped access control per API key.</p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-purple-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">Streaming via SSE</h3>
+          <p class="text-slate-400 text-sm">Real-time token streaming with Server-Sent Events. Compatible with OpenAI's streaming format. Zero buffering, low latency.</p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="card-hover bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div class="bg-cyan-500/10 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white mb-2">~18MB Docker Image</h3>
+          <p class="text-slate-400 text-sm">Multi-stage build from <code class="text-cyan-300 bg-slate-900 px-1 rounded">scratch</code>. Single binary, no runtime dependencies. PostgreSQL + Redis included in Compose.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="py-20 px-6 bg-slate-900">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-white text-center mb-3">Clean Architecture</h2>
+      <p class="text-slate-400 text-center mb-10">Strict Domain-Driven Design — dependencies flow inward only.</p>
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+        <div class="p-6">
+          <div class="space-y-3 font-mono text-sm">
+            <div class="bg-slate-700/60 rounded-xl p-4 border border-slate-600">
+              <div class="text-slate-400 text-xs mb-1 uppercase tracking-widest">Infrastructure Layer</div>
+              <div class="text-slate-300">HTTP handlers · PostgreSQL repos · Redis · LiteLLM client · Eino graphs</div>
+            </div>
+            <div class="flex justify-center text-slate-600 text-lg">↓ depends on</div>
+            <div class="bg-indigo-900/30 rounded-xl p-4 border border-indigo-800/40">
+              <div class="text-indigo-400 text-xs mb-1 uppercase tracking-widest">Application Layer</div>
+              <div class="text-slate-300">Use cases · DTOs · Workflow orchestration · Tool registry</div>
+            </div>
+            <div class="flex justify-center text-slate-600 text-lg">↓ depends on</div>
+            <div class="bg-green-900/20 rounded-xl p-4 border border-green-800/30">
+              <div class="text-green-400 text-xs mb-1 uppercase tracking-widest">Domain Layer (innermost — pure Go, zero external deps)</div>
+              <div class="text-slate-300">Entities · Value objects · Repository interfaces · Domain services</div>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-3 uppercase tracking-widest">Eino Workflow Graph</div>
+          <div class="font-mono text-xs text-slate-300 space-y-1">
+            <div>START → <span class="text-indigo-400">Router</span> (keyword-based agent selection)</div>
+            <div class="pl-8">→ <span class="text-amber-400">Think</span> (LLM call with available tools)</div>
+            <div class="pl-16">→ <span class="text-green-400">Act</span> (execute tool calls in parallel)</div>
+            <div class="pl-24">→ <span class="text-cyan-400">Observe</span> (inject results, loop or finish)</div>
+            <div class="pl-16">→ <span class="text-yellow-400">HumanApproval</span> (pause &amp; wait for /approve)</div>
+            <div class="pl-8">→ <span class="text-purple-400">Response</span> → END</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK START -->
+  <section id="quickstart" class="py-20 px-6 bg-slate-950">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-3xl font-bold text-white text-center mb-3">Quick Start</h2>
+      <p class="text-slate-400 text-center mb-10">Up and running in under 5 minutes.</p>
+
+      <div class="flex gap-2 mb-4">
+        <button onclick="switchTab('docker')" id="tab-docker" class="tab-btn active text-sm font-medium px-4 py-2 rounded-lg bg-indigo-600 text-white transition">Docker Compose</button>
+        <button onclick="switchTab('local')" id="tab-local" class="tab-btn text-sm font-medium px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Local Dev</button>
+      </div>
+
+      <div id="content-docker" class="tab-content active space-y-4">
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">1. Clone &amp; configure</div>
+          <pre class="text-green-300 text-sm"><code>git clone https://github.com/wyuneed/go-agent-api.git
+cd go-agent-api
+cp .env.example .env
+# Set LLM_BASE_URL and LLM_API_KEY in .env</code></pre>
+        </div>
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">2. Start all services</div>
+          <pre class="text-green-300 text-sm"><code>docker compose -f deployments/docker-compose.yml up -d
+# Starts: API + PostgreSQL + Redis + LiteLLM + Migrations</code></pre>
+        </div>
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">3. Make your first call</div>
+          <pre class="text-green-300 text-sm"><code># Register
+curl -X POST http://localhost:8080/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dev@example.com","password":"Secure1234","name":"Dev"}'
+
+# Login → get token
+curl -X POST http://localhost:8080/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"dev@example.com","password":"Secure1234"}'
+
+# Chat
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Authorization: Bearer &lt;access_token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'</code></pre>
+        </div>
+      </div>
+
+      <div id="content-local" class="tab-content space-y-4">
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">Prerequisites</div>
+          <pre class="text-green-300 text-sm"><code>go 1.22+, PostgreSQL 16, Redis 7
+make dev-deps   # installs golangci-lint, air, migrate</code></pre>
+        </div>
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">Setup &amp; run</div>
+          <pre class="text-green-300 text-sm"><code>cp .env.example .env   # fill in DB, Redis, LLM settings
+make migrate-up        # run all 5 migrations
+make run               # start server on :8080
+# or: make run-watch   # hot reload with air</code></pre>
+        </div>
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6">
+          <div class="text-slate-400 text-xs mb-2 uppercase tracking-widest">Test &amp; build</div>
+          <pre class="text-green-300 text-sm"><code>make test            # 81 unit tests with race detection
+make test-coverage   # generates coverage.html
+make build           # produces bin/server</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API ENDPOINTS -->
+  <section id="endpoints" class="py-20 px-6 bg-slate-900">
+    <div class="max-w-5xl mx-auto">
+      <h2 class="text-3xl font-bold text-white text-center mb-3">API Reference</h2>
+      <p class="text-slate-400 text-center mb-10">13 endpoints. All protected routes require <code class="text-indigo-300 bg-slate-800 px-2 py-0.5 rounded">Authorization: Bearer &lt;token&gt;</code></p>
+
+      <div class="space-y-6">
+
+        <!-- Auth -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+          <div class="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-widest">Auth</span>
+          </div>
+          <div class="divide-y divide-slate-700/60">
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/auth/register</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Create account</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/auth/login</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Login → access + refresh tokens</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/auth/refresh</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Refresh access token</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+          <div class="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-widest">Chat · OpenAI-Compatible</span>
+          </div>
+          <div class="divide-y divide-slate-700/60">
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/chat/completions</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Stateless chat, stream=true supported</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conversations -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+          <div class="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-widest">Conversations · Stateful</span>
+          </div>
+          <div class="divide-y divide-slate-700/60">
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/conversations</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Create conversation + first message</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-700/40 rounded px-2 py-1">GET</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/conversations</code>
+              <span class="text-slate-400 text-sm hidden sm:block">List all conversations</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-700/40 rounded px-2 py-1">GET</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/conversations/{id}</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Get conversation with message history</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/conversations/{id}/messages</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Send message to existing conversation</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/conversations/{id}/approve</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Approve / reject pending action</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tools -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+          <div class="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-widest">Tools</span>
+          </div>
+          <div class="divide-y divide-slate-700/60">
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-700/40 rounded px-2 py-1">GET</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/tools</code>
+              <span class="text-slate-400 text-sm hidden sm:block">List available tools</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/tools/execute</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Execute a single tool call</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-green-600/20 text-green-400 border border-green-700/40 rounded px-2 py-1">POST</span>
+              <code class="text-slate-200 text-sm flex-1">/v1/tools/batch</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Execute multiple tool calls in parallel</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Health -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+          <div class="px-6 py-3 bg-slate-700/50 border-b border-slate-700">
+            <span class="text-slate-300 font-semibold text-sm uppercase tracking-widest">Health</span>
+          </div>
+          <div class="divide-y divide-slate-700/60">
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-700/40 rounded px-2 py-1">GET</span>
+              <code class="text-slate-200 text-sm flex-1">/health</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Liveness check</span>
+            </div>
+            <div class="px-6 py-3 flex items-center gap-4">
+              <span class="w-16 text-center text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-700/40 rounded px-2 py-1">GET</span>
+              <code class="text-slate-200 text-sm flex-1">/ready</code>
+              <span class="text-slate-400 text-sm hidden sm:block">Readiness check (DB + Redis)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SWAGGER EXPLORER -->
+  <section id="explorer" class="py-20 px-6 bg-slate-950">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-bold text-white text-center mb-3">API Explorer</h2>
+      <p class="text-slate-400 text-center mb-8">Browse and explore the full OpenAPI specification.</p>
+      <div id="swagger-ui"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-12 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+        </svg>
+        <span class="text-slate-300 font-semibold">Go Agent API</span>
+        <span class="text-slate-600">v1.1.4</span>
+      </div>
+      <div class="flex items-center gap-6 text-sm text-slate-400">
+        <a href="https://github.com/wyuneed/go-agent-api" target="_blank" class="hover:text-white transition">GitHub</a>
+        <a href="https://github.com/wyuneed/go-agent-api/issues" target="_blank" class="hover:text-white transition">Issues</a>
+        <a href="https://github.com/wyuneed/go-agent-api/blob/main/LICENSE" target="_blank" class="hover:text-white transition">MIT License</a>
+      </div>
+      <div class="text-slate-600 text-sm">Built with Go · Eino · Chi · pgx</div>
+    </div>
+  </footer>
+
+  <!-- JS: Tab switching + Swagger UI init -->
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    // Tab switching
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active', 'bg-indigo-600', 'text-white');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      const btn = document.getElementById('tab-' + name);
+      btn.classList.add('active', 'bg-indigo-600', 'text-white');
+      btn.classList.remove('bg-slate-800', 'text-slate-300');
+      document.getElementById('content-' + name).classList.add('active');
+    }
+
+    // Swagger UI
+    window.onload = function() {
+      SwaggerUIBundle({
+        url: './swagger.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+        layout: 'StandaloneLayout',
+        tryItOutEnabled: false,
+        supportedSubmitMethods: [],
+      });
+    };
+  </script>
+
+</body>
+</html>
