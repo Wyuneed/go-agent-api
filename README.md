@@ -7,8 +7,9 @@
 [![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go)](https://golang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Architecture](https://img.shields.io/badge/architecture-DDD-orange)](#architecture)
+[![Swagger](https://img.shields.io/badge/docs-Swagger_UI-85EA2D?logo=swagger)](#swagger-ui)
 
-[Features](#features) · [Quick Start](#quick-start) · [Architecture](#architecture) · [API Reference](#api-reference) · [Configuration](#configuration) · [Contributing](#contributing)
+[Features](#features) · [Quick Start](#quick-start) · [Swagger UI](#swagger-ui) · [Architecture](#architecture) · [API Reference](#api-reference) · [Configuration](#configuration) · [Contributing](#contributing)
 
 </div>
 
@@ -39,6 +40,7 @@ It ships with JWT authentication, an OpenAI-compatible tool calling system, huma
 | **Caching** | Redis for token validation, rate limiting, and conversation state |
 | **Observability** | Structured JSON logging (slog), request IDs, panic recovery |
 | **Deployment** | Multi-stage Docker build from scratch (~18MB image), Docker Compose full stack |
+| **API Docs** | Interactive Swagger UI at `/swagger/index.html`; auto-generated OpenAPI 2.0 spec |
 | **Testing** | 39 unit tests with race detector; testify mocks; integration test harness |
 
 ---
@@ -183,6 +185,54 @@ curl -4 -X POST http://localhost:8080/v1/tools/execute \
   -d @/tmp/req.json
 # {"success":true,"data":{"expression":"1337 * 42","result":56154}}
 ```
+
+---
+
+## Swagger UI
+
+The API ships with interactive documentation powered by [swaggo/swag](https://github.com/swaggo/swag). Once the server is running, open your browser at:
+
+```
+http://127.0.0.1:8080/swagger/index.html
+```
+
+> **Important:** Use `127.0.0.1` instead of `localhost`. On macOS, browsers resolve `localhost` as IPv6 (`::1`) but the server binds to IPv4 only, causing a "connection reset" error.
+
+### Features
+
+- **Try it out** — execute any endpoint directly from the browser
+- **Authorize** — paste your JWT token once; all protected endpoints use it automatically
+- **Request/response schemas** — typed examples for every request body and response
+- **OpenAPI 2.0 spec** — machine-readable at `http://127.0.0.1:8080/swagger/doc.json`
+
+### How to authorize
+
+1. [Register](#first-api-call) or login to get an `access_token`
+2. Click **Authorize** (top right of the Swagger UI)
+3. Enter `Bearer <your_access_token>` in the value field
+4. Click **Authorize** → **Close**
+
+All endpoints tagged with the lock icon will now include your token automatically.
+
+### Regenerating after changes
+
+Whenever you add or modify handler annotations, regenerate the spec:
+
+```bash
+make swagger
+```
+
+This runs `swag init -g cmd/api/main.go -o docs/` and updates `docs/swagger.json`, `docs/swagger.yaml`, and `docs/docs.go`. Commit the generated files alongside your code changes.
+
+### Endpoints in the UI
+
+| Tag | Endpoints |
+|-----|-----------|
+| `health` | GET /health · GET /ready |
+| `auth` | POST /v1/auth/register · /login · /refresh |
+| `chat` | POST /v1/chat/completions |
+| `conversations` | POST/GET /v1/conversations · /messages · /approve |
+| `tools` | GET/POST /v1/tools · /execute · /batch |
 
 ---
 
@@ -537,7 +587,8 @@ make docker-up        docker-compose up -d
 make docker-down      docker-compose down
 make docker-logs      Follow API container logs
 make docker-ps        List running containers
-make dev-deps         Install golangci-lint, air, migrate
+make swagger          Regenerate Swagger docs (docs/)
+make dev-deps         Install golangci-lint, air, migrate, swag
 make clean            Remove build artifacts
 ```
 
@@ -551,6 +602,27 @@ make clean            Remove build artifacts
 curl may prefer IPv6. Force IPv4 with `-4`:
 ```bash
 curl -4 http://localhost:8080/health
+```
+</details>
+
+<details>
+<summary><strong>Swagger UI — "Failed to fetch" / CORS error when clicking Execute</strong></summary>
+
+This happens when your browser resolves `localhost` as IPv6 (`::1`) but the server only binds IPv4. Two fixes:
+
+**Fix 1 — Access the UI via `127.0.0.1` (recommended):**
+```
+http://127.0.0.1:8080/swagger/index.html
+```
+
+**Fix 2 — Change the host in the spec and regenerate:**
+```go
+// cmd/api/main.go
+// @host  127.0.0.1:8080
+```
+```bash
+make swagger
+make docker-build && make docker-up
 ```
 </details>
 
