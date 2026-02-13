@@ -41,7 +41,7 @@ It ships with JWT authentication, an OpenAI-compatible tool calling system, huma
 | **Observability** | Structured JSON logging (slog), request IDs, panic recovery |
 | **Deployment** | Multi-stage Docker build from scratch (~18MB image), Docker Compose full stack |
 | **API Docs** | Interactive Swagger UI at `/swagger/index.html`; auto-generated OpenAPI 2.0 spec |
-| **Testing** | 39 unit tests with race detector; testify mocks; integration test harness |
+| **Testing** | 81 unit tests with race detector; testify mocks; integration test harness |
 
 ---
 
