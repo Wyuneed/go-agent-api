@@ -27,24 +27,53 @@ type SendMessageOutput struct {
 }
 
 type SendMessageUseCase struct {
-	convRepo repository.ConversationRepository
-	msgRepo  repository.MessageRepository
-	llm      port.LLMProvider
+	convRepo     repository.ConversationRepository
+	msgRepo      repository.MessageRepository
+	llm          port.LLMProvider
+	defaultModel string
 }
 
 func NewSendMessageUseCase(
 	convRepo repository.ConversationRepository,
 	msgRepo repository.MessageRepository,
 	llm port.LLMProvider,
+	defaultModel string,
 ) *SendMessageUseCase {
+	if defaultModel == "" {
+		defaultModel = "gpt-4o-mini"
+	}
 	return &SendMessageUseCase{
-		convRepo: convRepo,
-		msgRepo:  msgRepo,
-		llm:      llm,
+		convRepo:     convRepo,
+		msgRepo:      msgRepo,
+		llm:          llm,
+		defaultModel: defaultModel,
 	}
 }
 
 func (uc *SendMessageUseCase) Execute(ctx context.Context, input SendMessageInput) (*SendMessageOutput, error) {
+	// Stateless path: caller supplied a full message array (e.g. POST /v1/chat/completions).
+	// Pass them directly to the LLM without touching the database.
+	if len(input.Messages) > 0 {
+		model := input.Model
+		if model == "" {
+			model = uc.defaultModel
+		}
+		resp, err := uc.llm.Chat(ctx, port.ChatRequest{
+			Model:    model,
+			Messages: input.Messages,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("LLM call: %w", err)
+		}
+		if len(resp.Choices) == 0 {
+			return nil, fmt.Errorf("no response from LLM")
+		}
+		return &SendMessageOutput{
+			Response: resp.Choices[0].Message.Content,
+		}, nil
+	}
+
+	// Stateful path: manage conversation + message storage in DB.
 	var conv *entity.Conversation
 	var err error
 
@@ -92,7 +121,7 @@ func (uc *SendMessageUseCase) Execute(ctx context.Context, input SendMessageInpu
 
 	model := input.Model
 	if model == "" {
-		model = "gpt-4o-mini"
+		model = uc.defaultModel
 	}
 
 	// Call LLM
@@ -136,7 +165,7 @@ func (uc *SendMessageUseCase) Execute(ctx context.Context, input SendMessageInpu
 func (uc *SendMessageUseCase) ExecuteStream(ctx context.Context, input SendMessageInput) (<-chan port.StreamEvent, error) {
 	model := input.Model
 	if model == "" {
-		model = "gpt-4o-mini"
+		model = uc.defaultModel
 	}
 
 	return uc.llm.ChatStream(ctx, port.ChatRequest{

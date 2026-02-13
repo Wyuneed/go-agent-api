@@ -102,7 +102,7 @@ func main() {
 	loginUC := auth.NewLoginUseCase(userRepo, tokenRepo, jwtMgr)
 	refreshUC := auth.NewRefreshTokenUseCase(tokenRepo, userRepo, jwtMgr)
 	createUserUC := user.NewCreateUserUseCase(userRepo)
-	sendMessageUC := chat.NewSendMessageUseCase(convRepo, msgRepo, llmProvider)
+	sendMessageUC := chat.NewSendMessageUseCase(convRepo, msgRepo, llmProvider, cfg.LLM.DefaultModel)
 	getConversationUC := chat.NewGetConversationUseCase(convRepo, msgRepo)
 	listConversationsUC := chat.NewListConversationsUseCase(convRepo)
 	approveActionUC := chat.NewApproveActionUseCase(convRepo)
