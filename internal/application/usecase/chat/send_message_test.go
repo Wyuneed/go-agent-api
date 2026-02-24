@@ -16,7 +16,7 @@ import (
 	"github.com/wyuneed/go-agent-api/tests/mocks"
 )
 
-// newMockChatResp returns a minimal LLM response.
+// newMockChatResp returns a minimal LLM response for stateless-path tests.
 func newMockChatResp(content string) *port.ChatResponse {
 	return &port.ChatResponse{
 		ID:    "chatcmpl-test",
@@ -31,12 +31,13 @@ func newMockChatResp(content string) *port.ChatResponse {
 	}
 }
 
-// ---- SendMessage — new conversation ----
+// ---- SendMessage — new conversation (stateful path via WorkflowEngine) ----
 
 func TestSendMessage_NewConversation_Success(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	userID := uuid.New()
 
@@ -44,11 +45,11 @@ func TestSendMessage_NewConversation_Success(t *testing.T) {
 	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	msgRepo.On("FindByConversationID", mock.Anything, mock.AnythingOfType("uuid.UUID")).
 		Return([]*entity.Message{}, nil)
-	llm.On("Chat", mock.Anything, mock.AnythingOfType("port.ChatRequest")).
-		Return(newMockChatResp("Hello!"), nil)
+	engine.On("Run", mock.Anything, mock.AnythingOfType("port.WorkflowInput")).
+		Return(mocks.NewMockWorkflowOutput("Hello!"), nil)
 	convRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	out, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		UserID:    userID,
 		Content:   "Hi there",
@@ -62,13 +63,14 @@ func TestSendMessage_NewConversation_Success(t *testing.T) {
 
 	convRepo.AssertExpectations(t)
 	msgRepo.AssertExpectations(t)
-	llm.AssertExpectations(t)
+	engine.AssertExpectations(t)
 }
 
 func TestSendMessage_NewConversation_DefaultAgent(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	convRepo.On("Create", mock.Anything, mock.MatchedBy(func(c *entity.Conversation) bool {
 		return c.AgentType == "general"
@@ -76,12 +78,11 @@ func TestSendMessage_NewConversation_DefaultAgent(t *testing.T) {
 	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	msgRepo.On("FindByConversationID", mock.Anything, mock.AnythingOfType("uuid.UUID")).
 		Return([]*entity.Message{}, nil)
-	llm.On("Chat", mock.Anything, mock.AnythingOfType("port.ChatRequest")).
-		Return(newMockChatResp("OK"), nil)
+	engine.On("Run", mock.Anything, mock.AnythingOfType("port.WorkflowInput")).
+		Return(mocks.NewMockWorkflowOutput("OK"), nil)
 	convRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
-	// AgentType not set — should default to "general"
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	_, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		UserID:  uuid.New(),
 		Content: "test",
@@ -97,6 +98,7 @@ func TestSendMessage_ExistingConversation_Success(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	userID := uuid.New()
 	conv := entity.NewConversation(userID, "general")
@@ -105,11 +107,11 @@ func TestSendMessage_ExistingConversation_Success(t *testing.T) {
 	convRepo.On("FindByID", mock.Anything, convID).Return(conv, nil)
 	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	msgRepo.On("FindByConversationID", mock.Anything, convID).Return([]*entity.Message{}, nil)
-	llm.On("Chat", mock.Anything, mock.AnythingOfType("port.ChatRequest")).
-		Return(newMockChatResp("Great!"), nil)
+	engine.On("Run", mock.Anything, mock.AnythingOfType("port.WorkflowInput")).
+		Return(mocks.NewMockWorkflowOutput("Great!"), nil)
 	convRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	out, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		ConversationID: &convID,
 		UserID:         userID,
@@ -125,11 +127,12 @@ func TestSendMessage_ExistingConversation_NotFound(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	convID := uuid.New()
 	convRepo.On("FindByID", mock.Anything, convID).Return(nil, errors.New("not found"))
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	_, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		ConversationID: &convID,
 		UserID:         uuid.New(),
@@ -144,6 +147,7 @@ func TestSendMessage_ExistingConversation_WrongUser(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	ownerID := uuid.New()
 	conv := entity.NewConversation(ownerID, "general")
@@ -151,10 +155,10 @@ func TestSendMessage_ExistingConversation_WrongUser(t *testing.T) {
 
 	convRepo.On("FindByID", mock.Anything, convID).Return(conv, nil)
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	_, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		ConversationID: &convID,
-		UserID:         uuid.New(), // different user
+		UserID:         uuid.New(),
 		Content:        "hack",
 	})
 
@@ -162,10 +166,11 @@ func TestSendMessage_ExistingConversation_WrongUser(t *testing.T) {
 	assert.Contains(t, err.Error(), "unauthorized")
 }
 
-func TestSendMessage_LLMError(t *testing.T) {
+func TestSendMessage_WorkflowError(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	userID := uuid.New()
 
@@ -173,42 +178,67 @@ func TestSendMessage_LLMError(t *testing.T) {
 	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	msgRepo.On("FindByConversationID", mock.Anything, mock.AnythingOfType("uuid.UUID")).
 		Return([]*entity.Message{}, nil)
-	llm.On("Chat", mock.Anything, mock.AnythingOfType("port.ChatRequest")).
+	engine.On("Run", mock.Anything, mock.AnythingOfType("port.WorkflowInput")).
 		Return(nil, errors.New("LLM unavailable"))
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	_, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		UserID:  userID,
 		Content: "anything",
 	})
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "LLM call")
+	assert.Contains(t, err.Error(), "workflow run")
 }
 
 func TestSendMessage_DefaultModel(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
 	msgRepo := &mocks.MockMessageRepository{}
 	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	convRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	msgRepo.On("FindByConversationID", mock.Anything, mock.AnythingOfType("uuid.UUID")).
 		Return([]*entity.Message{}, nil)
-	llm.On("Chat", mock.Anything, mock.MatchedBy(func(req port.ChatRequest) bool {
-		return req.Model == "gpt-4o-mini"
-	})).Return(newMockChatResp("done"), nil)
+	engine.On("Run", mock.Anything, mock.MatchedBy(func(input port.WorkflowInput) bool {
+		return input.Model == "gpt-4o-mini"
+	})).Return(mocks.NewMockWorkflowOutput("done"), nil)
 	convRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 
-	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, "")
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
 	_, err := uc.Execute(context.Background(), chat.SendMessageInput{
 		UserID:  uuid.New(),
 		Content: "test",
-		// Model intentionally empty — should default to gpt-4o-mini
 	})
 
 	require.NoError(t, err)
+	engine.AssertExpectations(t)
+}
+
+// ---- SendMessage — stateless path (Messages array, calls LLM directly) ----
+
+func TestSendMessage_Stateless_Success(t *testing.T) {
+	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	llm := &mocks.MockLLMProvider{}
+	engine := &mocks.MockWorkflowEngine{}
+
+	llm.On("Chat", mock.Anything, mock.AnythingOfType("port.ChatRequest")).
+		Return(newMockChatResp("stateless reply"), nil)
+
+	uc := chat.NewSendMessageUseCase(convRepo, msgRepo, llm, engine, "")
+	out, err := uc.Execute(context.Background(), chat.SendMessageInput{
+		UserID: uuid.New(),
+		Messages: []port.ChatMessage{
+			{Role: "user", Content: "hello"},
+		},
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, "stateless reply", out.Response)
 	llm.AssertExpectations(t)
+	engine.AssertNotCalled(t, "Run")
 }
 
 // ---- GetConversation ----
@@ -319,19 +349,30 @@ func TestListConversations_RepoError(t *testing.T) {
 
 // ---- ApproveAction ----
 
-func TestApproveAction_Approve_Success(t *testing.T) {
-	convRepo := &mocks.MockConversationRepository{}
-
-	userID := uuid.New()
+func newPendingConvWithState(userID uuid.UUID) *entity.Conversation {
 	conv := entity.NewConversation(userID, "general")
 	conv.RequestApproval("tool_node", map[string]any{"tool": "web_search"})
+	conv.WorkflowState["paused_state"] = `{"conversation_id":"00000000-0000-0000-0000-000000000000","user_id":"00000000-0000-0000-0000-000000000000","pending_tools":[],"messages":[],"agent_history":[],"approval_data":{},"model":"gpt-4o-mini","temperature":0.7,"max_tokens":4096,"max_iterations":10}`
+	return conv
+}
+
+func TestApproveAction_Approve_Success(t *testing.T) {
+	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	engine := &mocks.MockWorkflowEngine{}
+
+	userID := uuid.New()
+	conv := newPendingConvWithState(userID)
 
 	convRepo.On("FindByID", mock.Anything, conv.ID).Return(conv, nil)
+	engine.On("Resume", mock.Anything, mock.Anything, true).
+		Return(mocks.NewMockWorkflowOutput("Tool executed successfully."), nil)
+	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	convRepo.On("Update", mock.Anything, mock.MatchedBy(func(c *entity.Conversation) bool {
 		return c.Status == entity.ConversationStatusActive
 	})).Return(nil)
 
-	uc := chat.NewApproveActionUseCase(convRepo)
+	uc := chat.NewApproveActionUseCase(convRepo, msgRepo, engine)
 	out, err := uc.Execute(context.Background(), chat.ApproveInput{
 		ConversationID: conv.ID,
 		UserID:         userID,
@@ -340,20 +381,24 @@ func TestApproveAction_Approve_Success(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "approved", out.Status)
-	assert.Equal(t, entity.ConversationStatusActive, out.Conversation.Status)
+	assert.Equal(t, "Tool executed successfully.", out.Response)
 }
 
 func TestApproveAction_Reject_Success(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	userID := uuid.New()
-	conv := entity.NewConversation(userID, "general")
-	conv.RequestApproval("tool_node", map[string]any{"tool": "dangerous_tool"})
+	conv := newPendingConvWithState(userID)
 
 	convRepo.On("FindByID", mock.Anything, conv.ID).Return(conv, nil)
+	engine.On("Resume", mock.Anything, mock.Anything, false).
+		Return(mocks.NewMockWorkflowOutput("The requested action was rejected."), nil)
+	msgRepo.On("Create", mock.Anything, mock.AnythingOfType("*entity.Message")).Return(nil)
 	convRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.Conversation")).Return(nil)
 
-	uc := chat.NewApproveActionUseCase(convRepo)
+	uc := chat.NewApproveActionUseCase(convRepo, msgRepo, engine)
 	out, err := uc.Execute(context.Background(), chat.ApproveInput{
 		ConversationID: conv.ID,
 		UserID:         userID,
@@ -367,13 +412,15 @@ func TestApproveAction_Reject_Success(t *testing.T) {
 
 func TestApproveAction_NotPendingApproval(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	userID := uuid.New()
-	conv := entity.NewConversation(userID, "general") // status = active, not pending
+	conv := entity.NewConversation(userID, "general")
 
 	convRepo.On("FindByID", mock.Anything, conv.ID).Return(conv, nil)
 
-	uc := chat.NewApproveActionUseCase(convRepo)
+	uc := chat.NewApproveActionUseCase(convRepo, msgRepo, engine)
 	_, err := uc.Execute(context.Background(), chat.ApproveInput{
 		ConversationID: conv.ID,
 		UserID:         userID,
@@ -386,17 +433,18 @@ func TestApproveAction_NotPendingApproval(t *testing.T) {
 
 func TestApproveAction_WrongUser(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	ownerID := uuid.New()
-	conv := entity.NewConversation(ownerID, "general")
-	conv.RequestApproval("node", nil)
+	conv := newPendingConvWithState(ownerID)
 
 	convRepo.On("FindByID", mock.Anything, conv.ID).Return(conv, nil)
 
-	uc := chat.NewApproveActionUseCase(convRepo)
+	uc := chat.NewApproveActionUseCase(convRepo, msgRepo, engine)
 	_, err := uc.Execute(context.Background(), chat.ApproveInput{
 		ConversationID: conv.ID,
-		UserID:         uuid.New(), // wrong user
+		UserID:         uuid.New(),
 		Approved:       true,
 	})
 
@@ -406,11 +454,13 @@ func TestApproveAction_WrongUser(t *testing.T) {
 
 func TestApproveAction_ConversationNotFound(t *testing.T) {
 	convRepo := &mocks.MockConversationRepository{}
+	msgRepo := &mocks.MockMessageRepository{}
+	engine := &mocks.MockWorkflowEngine{}
 
 	convID := uuid.New()
 	convRepo.On("FindByID", mock.Anything, convID).Return(nil, errors.New("not found"))
 
-	uc := chat.NewApproveActionUseCase(convRepo)
+	uc := chat.NewApproveActionUseCase(convRepo, msgRepo, engine)
 	_, err := uc.Execute(context.Background(), chat.ApproveInput{
 		ConversationID: convID,
 		UserID:         uuid.New(),

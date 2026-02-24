@@ -40,6 +40,7 @@ import (
 	"github.com/wyuneed/go-agent-api/internal/application/usecase/tool/builtin"
 	"github.com/wyuneed/go-agent-api/internal/application/usecase/user"
 	"github.com/wyuneed/go-agent-api/internal/infrastructure/config"
+	"github.com/wyuneed/go-agent-api/internal/infrastructure/eino/graphs"
 	"github.com/wyuneed/go-agent-api/internal/infrastructure/http/handler"
 	"github.com/wyuneed/go-agent-api/internal/infrastructure/http/middleware"
 	"github.com/wyuneed/go-agent-api/internal/infrastructure/llm/litellm"
@@ -97,15 +98,25 @@ func main() {
 		builtin.NewWebSearchTool(cfg.Tools.WebSearchAPIKey),
 	)
 
+	// Eino Workflow Engine
+	chatbotGraph := graphs.NewChatbotGraph(llmProvider, toolRegistry)
+	if err := chatbotGraph.BuildRunnable(ctx); err != nil {
+		slog.Error("failed to build chatbot graph", "error", err)
+		os.Exit(1)
+	}
+
+	// Tool execution repository
+	_ = postgres.NewToolExecutionRepository(db)
+
 	// Use Cases
 	validateTokenUC := auth.NewValidateTokenUseCase(tokenRepo, userRepo, jwtMgr)
 	loginUC := auth.NewLoginUseCase(userRepo, tokenRepo, jwtMgr)
 	refreshUC := auth.NewRefreshTokenUseCase(tokenRepo, userRepo, jwtMgr)
 	createUserUC := user.NewCreateUserUseCase(userRepo)
-	sendMessageUC := chat.NewSendMessageUseCase(convRepo, msgRepo, llmProvider, cfg.LLM.DefaultModel)
+	sendMessageUC := chat.NewSendMessageUseCase(convRepo, msgRepo, llmProvider, chatbotGraph, cfg.LLM.DefaultModel)
 	getConversationUC := chat.NewGetConversationUseCase(convRepo, msgRepo)
 	listConversationsUC := chat.NewListConversationsUseCase(convRepo)
-	approveActionUC := chat.NewApproveActionUseCase(convRepo)
+	approveActionUC := chat.NewApproveActionUseCase(convRepo, msgRepo, chatbotGraph)
 	executeToolUC := tool.NewExecuteToolUseCase(toolRegistry, cfg.Tools.MaxConcurrent)
 
 	// Middleware
