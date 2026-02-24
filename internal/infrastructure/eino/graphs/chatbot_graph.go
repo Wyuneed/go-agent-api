@@ -46,6 +46,7 @@ Workflow Graph:
 type ChatbotGraph struct {
 	llm           port.LLMProvider
 	toolRegistry  *tool.ToolRegistry
+	runnable      compose.Runnable[*state.AgentState, *state.AgentState]
 	systemPrompts map[string]string
 	modelConfig   map[string]string
 }
@@ -73,8 +74,19 @@ Present balanced perspectives on controversial topics.`,
 	}
 }
 
-// Build constructs and compiles the Eino workflow graph.
-func (g *ChatbotGraph) Build(ctx context.Context) (compose.Runnable[*state.AgentState, *state.AgentState], error) {
+// BuildRunnable compiles the Eino graph and stores the runnable for repeated use.
+// Must be called once at startup before Run or Resume.
+func (g *ChatbotGraph) BuildRunnable(ctx context.Context) error {
+	runnable, err := g.build(ctx)
+	if err != nil {
+		return err
+	}
+	g.runnable = runnable
+	return nil
+}
+
+// build constructs and compiles the Eino workflow graph.
+func (g *ChatbotGraph) build(ctx context.Context) (compose.Runnable[*state.AgentState, *state.AgentState], error) {
 	graph := compose.NewGraph[*state.AgentState, *state.AgentState]()
 
 	// Add nodes
@@ -134,9 +146,9 @@ func (g *ChatbotGraph) Build(ctx context.Context) (compose.Runnable[*state.Agent
 
 	// human_approval → branch (act | response | END)
 	approvalBranch := compose.NewGraphBranch(g.routeAfterApproval, map[string]bool{
-		"act":      true,
-		"response": true,
-		compose.END: true,
+		"act":         true,
+		"response":    true,
+		compose.END:   true,
 	})
 	if err := graph.AddBranch("human_approval", approvalBranch); err != nil {
 		return nil, fmt.Errorf("add approval branch: %w", err)
@@ -148,6 +160,116 @@ func (g *ChatbotGraph) Build(ctx context.Context) (compose.Runnable[*state.Agent
 	}
 
 	return graph.Compile(ctx, compose.WithGraphName("chatbot"))
+}
+
+// ============ WorkflowEngine INTERFACE IMPLEMENTATION ============
+
+// Run executes the full workflow for a new user turn.
+func (g *ChatbotGraph) Run(ctx context.Context, input port.WorkflowInput) (*port.WorkflowOutput, error) {
+	if g.runnable == nil {
+		return nil, fmt.Errorf("graph not built: call BuildRunnable first")
+	}
+
+	s := state.NewAgentState(input.ConversationID, input.UserID, input.Content)
+	s.Messages = input.Messages
+	if input.Model != "" {
+		s.Model = input.Model
+	}
+	if input.Temperature > 0 {
+		s.Temperature = input.Temperature
+	}
+
+	finalState, err := g.runnable.Invoke(ctx, s)
+	if err != nil {
+		return nil, fmt.Errorf("graph invoke: %w", err)
+	}
+
+	out := &port.WorkflowOutput{
+		Response:       finalState.CurrentOutput,
+		TokensUsed:     finalState.TokensUsed,
+		ToolCallsCount: finalState.ToolCallsCount,
+		AgentType:      finalState.CurrentAgent,
+	}
+
+	if finalState.RequiresApproval {
+		stateJSON, err := finalState.ToJSON()
+		if err != nil {
+			return nil, fmt.Errorf("serialise paused state: %w", err)
+		}
+		out.RequiresApproval = true
+		out.ApprovalReason = finalState.ApprovalReason
+		out.PausedStateJSON = stateJSON
+	}
+
+	return out, nil
+}
+
+// Resume continues a workflow paused at human_approval.
+// It manually executes actNode → observeNode and then re-invokes the graph
+// so the remaining think→response turns complete normally.
+func (g *ChatbotGraph) Resume(ctx context.Context, pausedStateJSON []byte, approved bool) (*port.WorkflowOutput, error) {
+	if g.runnable == nil {
+		return nil, fmt.Errorf("graph not built: call BuildRunnable first")
+	}
+
+	s, err := state.FromJSON(pausedStateJSON)
+	if err != nil {
+		return nil, fmt.Errorf("deserialise paused state: %w", err)
+	}
+
+	s.IsApproved = &approved
+	s.RequiresApproval = false
+
+	if !approved {
+		// Rejected: synthesise a response message and stop.
+		if s.CurrentOutput == "" {
+			s.CurrentOutput = "The requested action was rejected."
+		}
+		return &port.WorkflowOutput{
+			Response:       s.CurrentOutput,
+			TokensUsed:     s.TokensUsed,
+			ToolCallsCount: s.ToolCallsCount,
+			AgentType:      s.CurrentAgent,
+		}, nil
+	}
+
+	// Approved: execute the pending tools directly, then continue via the graph.
+	s, err = g.actNode(ctx, s)
+	if err != nil {
+		return nil, fmt.Errorf("resume act: %w", err)
+	}
+	s, err = g.observeNode(ctx, s)
+	if err != nil {
+		return nil, fmt.Errorf("resume observe: %w", err)
+	}
+
+	// Clear approval flags so the graph continues normally from think/response.
+	s.IsApproved = nil
+	s.RequiresApproval = false
+
+	finalState, err := g.runnable.Invoke(ctx, s)
+	if err != nil {
+		return nil, fmt.Errorf("resume graph invoke: %w", err)
+	}
+
+	out := &port.WorkflowOutput{
+		Response:       finalState.CurrentOutput,
+		TokensUsed:     finalState.TokensUsed,
+		ToolCallsCount: finalState.ToolCallsCount,
+		AgentType:      finalState.CurrentAgent,
+	}
+
+	if finalState.RequiresApproval {
+		stateJSON, err := finalState.ToJSON()
+		if err != nil {
+			return nil, fmt.Errorf("serialise paused state: %w", err)
+		}
+		out.RequiresApproval = true
+		out.ApprovalReason = finalState.ApprovalReason
+		out.PausedStateJSON = stateJSON
+	}
+
+	return out, nil
 }
 
 // ============ NODE IMPLEMENTATIONS ============
@@ -174,7 +296,7 @@ func (g *ChatbotGraph) routerNode(ctx context.Context, s *state.AgentState) (*st
 
 	s.AgentHistory = append(s.AgentHistory, s.CurrentAgent)
 
-	if model, ok := g.modelConfig[s.CurrentAgent]; ok {
+	if model, ok := g.modelConfig[s.CurrentAgent]; ok && s.Model == "" {
 		s.Model = model
 	}
 	if prompt, ok := g.systemPrompts[s.CurrentAgent]; ok {
